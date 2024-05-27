@@ -59,8 +59,8 @@ Based on the API-key the user has, you may be limitated on the daily number of r
 ## Help
 Flags:
 - ```-h```          help
-- ```-l\[N\]```    starting at line \[N\] of the input sha256 file
-- ```-n\[NAME\]```  \[NAME\] is going to be the folder's name
+- ```-l[N]```    starting at line \[N\] of the input sha256 file
+- ```-n[NAME]```  \[NAME\] is going to be the folder's name
 
 # Gather Hashes
 To run the script you need to have a list of hashes you can check. If you are doing research and want to find lists of hashes you can use the following steps, which use semi-automatic tools: **retrive-hashes.js**, **clean.html** before executing **MHATOD.py** script.
