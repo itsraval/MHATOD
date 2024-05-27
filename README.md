@@ -20,10 +20,10 @@ Future API required (it's reccomend to request the API key):
 ![Output folders](https://github.com/itsraval/MHATOD/blob/main/images/folder-struct.png)
 
 
-<div style="text-align:center">
+<p align="center">
   <img alt="" src="https://github.com/itsraval/MHATOD/blob/main/images/folder-struct.png">
 
-</div>
+</p>
 
 
 ## Limitation
