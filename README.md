@@ -17,7 +17,8 @@ Future API required (it's reccomend to request the API key):
 ### Input File
 
 ### Output
-![Output folders](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png)
+![Output folders](https://github.com/itsraval/MHATOD/blob/main/images/folder-struct.png)
+
 
 ## Limitation
 
