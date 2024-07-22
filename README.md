@@ -1,4 +1,4 @@
-<img align="right" src="https://github.com/itsraval/MHATOD/blob/main/images/favicon.png" width="200" height="200">
+<img align="right" src="https://github.com/itsraval/MHATOD/blob/main/images/images/MHATOD.png" width="200" height="200">
 
 # Malware Hash Analysis Through Online Databases (MHATOD)
 descrizione
