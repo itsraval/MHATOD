@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>JS Hashes Cleaner</title>
+	<link rel="icon" type="image/x-icon" href="data:image/png;base64,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">
+	<style type="text/css">
+		html, body{
+			text-align: center;
+			background-color: #f0f0f0;
+		}
+
+		h1{
+			font-size: 70px;
+		}
+
+		textarea{
+			width: 75%;
+			height: 50%;
+			padding: 12px 20px;
+			box-sizing: border-box;
+			border: 2px solid #ccc;
+			border-radius: 4px;
+			background-color: #f8f8f8;
+			font-size: 16px;
+			resize: none;
+		}
+
+		div{
+			width: 100%;
+			margin-top: 50px;
+		}
+
+		button{
+			width: 300px;
+			height: 75px;
+			margin-left: 50px;
+			margin-right: 50px;
+			font-size: 25px;
+			background-color: #f8f8f8;
+			box-sizing: border-box;
+			border: 2px solid #ccc;
+			border-radius: 4px;
+		}
+
+		button:hover{
+			background-color: #6082B6;
+			color: #f8f8f8;
+		}
+	</style>
+
+	<script type="text/javascript">
+		function onlyUnique(value, index, array) {
+		  return array.indexOf(value) === index;
+		}
+
+
+		function clean(){
+			var copyText = document.getElementById("textarea")
+			copyText.select();
+  			copyText.setSelectionRange(0, 99999)
+  			text = copyText.value.split("\n")
+
+  			hashes = []
+
+  			for (i=0; i<text.length; i++){
+  				if (text[i].match(/\b[A-Fa-f0-9]{64}\b/)){
+  					t = text[i].replace('"','')
+  					while (t.includes('"')){
+  						t = t.replace('"','')
+  					}
+  					hashes.push(t)
+  				}
+  			}
+
+  			hashes.sort()
+  			uniqueHashes = hashes.filter(onlyUnique);
+
+  			output = ""
+
+  			for (i=0; i<uniqueHashes.length-1; i++){
+  				output = output + uniqueHashes[i] + "\n"
+  			}
+
+  			output = output + uniqueHashes[uniqueHashes.length-1]
+
+  			copyText.value = output
+
+		}
+
+		function copy(){
+			var copyText = document.getElementById("textarea")
+			copyText.select();
+  			copyText.setSelectionRange(0, 99999)
+  			navigator.clipboard.writeText(copyText.value);
+		}
+
+	</script>
+</head>
+<body>
+	<h1>JS Hashes Cleaner</h1>
+	<textarea id="textarea" name="w3review" rows="30" cols="200" autofocus></textarea>
+	<div>
+		<button onclick="clean()">Clean Text</button>
+		<button onclick="copy()">Copy To Clipboard</button>
+	</div>
+
+</body>
+</html>
