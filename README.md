@@ -4,7 +4,8 @@
 MATHOD is a python script that aims to gather information regarding malware through searching online databases such as [VirusTotal](https://www.virustotal.com/gui/search/) and [Malware Bazaar](https://bazaar.abuse.ch/) and using libraries such as [AVClass](https://github.com/malicialab/avclass/tree/master).
 
 
-This project was developed during my dissertation "Behavioural Analysis of Current Evolution Ransomware Attack Exfiltration Methods" in MSc Advance Security & Digital Forencics at [Edinburgh Napier University](https://www.napier.ac.uk/courses/msc-cyber-security-postgraduate-full-time). Further Information can be found on my personal web page [alessandro.ravizzotti.dev](https://alessandro.ravizzotti.dev).
+This project was developed during my dissertation ["Behavioural Analysis of Current Evolution Ransomware Attack Exfiltration Methods"](https://github.com/itsraval/MHATOD/blob/main/Behavioural%20Analysis%20of%20Current%20Evolution%20Ransomware%20Attack%20Exfiltration%20Methods.pdf)
+ in MSc Advance Security & Digital Forencics at [Edinburgh Napier University](https://www.napier.ac.uk/courses/msc-cyber-security-postgraduate-full-time). Further Information can be found on my personal web page [alessandro.ravizzotti.dev](https://alessandro.ravizzotti.dev).
 
 
 The following image shows an example of output.
