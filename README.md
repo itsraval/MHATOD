@@ -5,7 +5,7 @@ MATHOD is a python script that aims to gather information regarding malware thro
 
 
 This project was developed during my dissertation ["Behavioural Analysis of Current Evolution Ransomware Attack Exfiltration Methods"](https://github.com/itsraval/MHATOD/blob/main/Behavioural%20Analysis%20of%20Current%20Evolution%20Ransomware%20Attack%20Exfiltration%20Methods.pdf)
- in MSc Advance Security & Digital Forencics at [Edinburgh Napier University](https://www.napier.ac.uk/courses/msc-cyber-security-postgraduate-full-time). Further Information can be found on my personal web page [alessandro.ravizzotti.dev](https://alessandro.ravizzotti.dev).
+ in MSc Advance Security & Digital Forencics at [Edinburgh Napier University](https://www.napier.ac.uk/courses/msc-cyber-security-postgraduate-full-time). Further Information can be found on my personal web page [alessandro.ravizzotti.dev](https://alessandro.ravizzotti.dev) and in my dissertation listed above.
 
 
 The following image shows an example of output.
@@ -14,14 +14,15 @@ The following image shows an example of output.
 
 ## Dependencies
 ### Internal
-- requests
-- sys
-- datetime
-- csv
-- pathlib 
-- json
-- subprocess
 - collections
+- csv
+- datetime
+- json
+- pathlib 
+- requests
+- subprocess
+- sys
+
 
 ### External
 The external dependencies are used by creating subprocess in the MHATOD script.
