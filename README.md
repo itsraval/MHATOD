@@ -1,7 +1,14 @@
 <img align="right" src="https://github.com/itsraval/MHATOD/blob/main/images/images/MHATOD.png" width="200" height="200">
 
 # Malware Hash Analysis Through Online Databases (MHATOD)
-descrizione
+MATHOD is a python script that aims to gather information regarding malware through searching online databases such as [VirusTotal](https://www.virustotal.com/gui/search/) and [Malware Bazaar](https://bazaar.abuse.ch/) and using libraries such as [AVClass](https://github.com/malicialab/avclass/tree/master).
+
+
+This project was developed during my dissertation "Behavioural Analysis of Current Evolution Ransomware Attack Exfiltration Methods" in MSc Advance Security & Digital Forencics at [Edinburgh Napier University](https://www.napier.ac.uk/courses/msc-cyber-security-postgraduate-full-time). Further Information can be found on my personal web page [alessandro.ravizzotti.dev](https://alessandro.ravizzotti.dev).
+
+
+The following image shows an example of output.
+<img align="center" src="https://github.com/itsraval/MHATOD/blob/main/images/images/output-example.png" height="400">
 
 
 ## Dependencies
@@ -10,7 +17,7 @@ descrizione
 - sys
 - datetime
 - csv
-- pathlib
+- pathlib 
 - json
 - subprocess
 - collections
@@ -25,6 +32,8 @@ Current API required to run the script:
 
 Future API required (it's reccomend to request the API key):
 - [Triage](https://tria.ge/s)
+
+#### The API has to be set in the settings.py file located in the src folder.
 
 ## Example
 ```
@@ -59,7 +68,9 @@ Based on the API-key the user has, you may be limitated on the daily number of r
 
 ## Help
 Flags:
+- ```-b```          show banner
 - ```-h```          help
+- ```-i```          developer information
 - ```-l[N]```    starting at line \[N\] of the input sha256 file
 - ```-n[NAME]```  \[NAME\] is going to be the folder's name
 
@@ -81,13 +92,5 @@ All tools listed below are released under the MIT license.
 Future developments concern the integration with [Triage](https://tria.ge/s) API for searching for information regarding malware. Other databases will be taken into consideration for the analysis and futher fields will be investigated. Furthermore, improvements regarding user usability will be made in the next version.
 
 ### TODO
-- add description
-- help menu
-- flags settings
-- requirements file
 - new API
-- add logo
-- add logo to readme
-- add logo to script
-- divide script into files
 - ...
