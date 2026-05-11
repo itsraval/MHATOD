@@ -210,10 +210,9 @@ Classification results (AVClass family, threat tags) should be treated as eviden
 
 ## Author
 
-Developed by **Alessandro Ravizzotti**  
-GitHub: [https://github.com/itsraval/MHATOD](https://github.com/itsraval/MHATOD)  
+Developed by **Alessandro Ravizzotti** 
 Website: [alessandro.ravizzotti.dev](https://alessandro.ravizzotti.dev)  
-Contact: [alessandro@ravizzotti.dev](mailto:alessandro@ravizzotti.dev)
+Contact: alessandro[@]ravizzotti[.]dev
 
 ---
 
