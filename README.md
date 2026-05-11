@@ -1,22 +1,22 @@
 <img align="right" src=".github/assets/MHATOD.png" width="200" height="200">
 
-# MHATOD — Malware Hash Analysis Tool for Open-source Data
+# MHATOD - Malware Hash Analysis Tool for Open-source Data
 
-MHATOD is a Python tool that gathers and classifies malware metadata by querying online databases — [VirusTotal](https://www.virustotal.com/gui/search/) and [MalwareBazaar](https://bazaar.abuse.ch/) — and enriching the results with family and tag classification via [AVClass](https://github.com/malicialab/avclass/tree/master). Results are exported as structured JSON and CSV files for downstream analysis.
+MHATOD is a Python tool that gathers and classifies malware metadata by querying online databases - [VirusTotal](https://www.virustotal.com/gui/search/) and [MalwareBazaar](https://bazaar.abuse.ch/) - and enriching the results with family and tag classification via [AVClass](https://github.com/malicialab/avclass/tree/master). Results are exported as structured JSON and CSV files for downstream analysis.
 
-This project was developed during the dissertation [**"Behavioural Analysis of Current Evolution Ransomware Attack Exfiltration Methods"**](https://github.com/itsraval/MHATOD/blob/main/Docs/Behavioural_Analysis_of_Current_Evolution_Ransomware_Attack_Exfiltration_Methods.pdf) — MSc Advanced Security & Digital Forensics at [Edinburgh Napier University](https://www.napier.ac.uk/courses/msc-cyber-security-postgraduate-full-time).
+This project was developed during the dissertation [**"Behavioural Analysis of Current Evolution Ransomware Attack Exfiltration Methods"**](https://github.com/itsraval/MHATOD/blob/main/Docs/Behavioural_Analysis_of_Current_Evolution_Ransomware_Attack_Exfiltration_Methods.pdf) - MSc Advanced Security & Digital Forensics at [Edinburgh Napier University](https://www.napier.ac.uk/courses/msc-cyber-security-postgraduate-full-time).
 
 ---
 
 ## Features
 
-- **VirusTotal integration** — fetches file type, first submission date, threat classification, YARA results, and per-AV-engine detections
-- **MalwareBazaar integration** — fetches file type, architecture, signature, ClamAV results, and vendor intelligence (ANY.RUN, Intezer, Triage, ReversingLabs)
-- **AvClass labeling** — derives malware family names and threat tags from VirusTotal output using the AvClass classifier
-- **Parallel querying** — VirusTotal and MalwareBazaar requests run concurrently via `ThreadPoolExecutor`
-- **Threat tag aggregation** — token-level tag extraction and frequency ranking across all data sources; optional top-5 filtering
-- **Structured output** — individual JSON files per hash plus consolidated JSON and CSV files for each module and a final combined dataset
-- **Resumable scans** — `--skip-lines` lets you pick up from where a previous run left off
+- **VirusTotal integration** - fetches file type, first submission date, threat classification, YARA results, and per-AV-engine detections
+- **MalwareBazaar integration** - fetches file type, architecture, signature, ClamAV results, and vendor intelligence (ANY.RUN, Intezer, Triage, ReversingLabs)
+- **AvClass labeling** - derives malware family names and threat tags from VirusTotal output using the AvClass classifier
+- **Parallel querying** - VirusTotal and MalwareBazaar requests run concurrently via `ThreadPoolExecutor`
+- **Threat tag aggregation** - token-level tag extraction and frequency ranking across all data sources; optional top-5 filtering
+- **Structured output** - individual JSON files per hash plus consolidated JSON and CSV files for each module and a final combined dataset
+- **Resumable scans** - `--skip-lines` lets you pick up from where a previous run left off
 
 ---
 
@@ -56,8 +56,8 @@ MHATOD/
 ## Requirements
 
 - Python 3.8+
-- A **VirusTotal** API key (free tier supported) — [get one here](https://www.virustotal.com/gui/join-us)
-- A **MalwareBazaar** API key — [get one here](https://bazaar.abuse.ch/api/)
+- A **VirusTotal** API key (free tier supported) - [get one here](https://www.virustotal.com/gui/join-us)
+- A **MalwareBazaar** API key - [get one here](https://bazaar.abuse.ch/api/)
 - [AvClass](https://github.com/malicialab/avclass) installed and available on `PATH`
 
 > At least one of the two API keys is required. The tool will warn you and ask for confirmation if one is missing.
@@ -138,7 +138,7 @@ One SHA256 hash per line, no headers or extra whitespace.
 
 Before running MHATOD, you need an input file of SHA256 hashes. The `scripts/hash_gathering/` directory provides tools to collect and prepare them from online malware databases.
 
-### Step 1 — Extract hashes from MalwareBazaar or Triage
+### Step 1 - Extract hashes from MalwareBazaar or Triage
 
 Open `HashesCleaner.html` in your browser and click **Copy Extractor JS**. This copies a JavaScript snippet to your clipboard. Then:
 
@@ -147,13 +147,13 @@ Open `HashesCleaner.html` in your browser and click **Copy Extractor JS**. This 
 3. Paste and run the copied JS. It scrapes all visible SHA256 hashes on the page and copies them to your clipboard.
 4. Paste the result into the `HashesCleaner.html` textarea.
 
-### Step 2 — Clean and format the hashes
+### Step 2 - Clean and format the hashes
 
-With raw text in the textarea (console output, logs, or any mixed content), click **Clean Text**. The tool extracts all valid SHA256 hashes via regex, deduplicates them, sorts them, and displays one hash per line — ready to use as MHATOD input.
+With raw text in the textarea (console output, logs, or any mixed content), click **Clean Text**. The tool extracts all valid SHA256 hashes via regex, deduplicates them, sorts them, and displays one hash per line - ready to use as MHATOD input.
 
 Click **Copy Hashes** to copy to clipboard, then save to a `.txt` file.
 
-### Step 3 — Run MHATOD
+### Step 3 - Run MHATOD
 
 ```bash
 python MHATOD.py hashes.txt -o results/my_scan
@@ -202,7 +202,7 @@ See `scripts/hash_gathering/README.md` for full details.
 
 ## Limitations
 
-MHATOD's output quality depends on what the databases contain. If a hash has no record on VirusTotal or MalwareBazaar, no metadata will be generated for that sample. Discrepancies between sources are common — this is expected and is one of the reasons the tool queries multiple databases simultaneously.
+MHATOD's output quality depends on what the databases contain. If a hash has no record on VirusTotal or MalwareBazaar, no metadata will be generated for that sample. Discrepancies between sources are common - this is expected and is one of the reasons the tool queries multiple databases simultaneously.
 
 Classification results (AVClass family, threat tags) should be treated as evidence to guide analysis, not as ground truth. Manual review of the combined output is recommended when building a curated dataset.
 
