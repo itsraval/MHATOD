@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>JS Hashes Cleaner</title>
+    <style>
+        body {
+            text-align: center;
+            background-color: #f0f0f0;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 { font-size: clamp(30px, 5vw, 70px); margin-bottom: 20px; }
+
+        textarea {
+            width: 80%;
+            height: 50vh;
+            padding: 15px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            background-color: #f8f8f8;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 15px 30px;
+            min-width: 200px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #fff;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #6082B6;
+            color: white;
+            border-color: #6082B6;
+        }
+
+        button:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+    <h1>JS Hashes Cleaner</h1>
+    
+    <textarea id="textarea" placeholder="Paste logs or text containing SHA256 hashes here..." autofocus></textarea>
+
+    <div class="controls">
+        <button onclick="cleanHashes()">Clean Text</button>
+        <button onclick="copyToClipboard()">Copy Hashes</button>
+        <button onclick="copyExtractorJS()">Copy Extractor JS</button>
+    </div>
+
+    <script>
+        const area = document.getElementById("textarea");
+
+        function cleanHashes() {
+            const rawText = area.value;
+            const hashRegex = /\b[A-Fa-f0-9]{64}\b/;
+            
+            const lines = rawText.split(/\s+/);
+            const cleanList = lines
+                .map(line => line.replace(/"/g, '').trim())
+                .filter(line => hashRegex.test(line));
+
+            const uniqueHashes = [...new Set(cleanList)].sort();
+
+            area.value = uniqueHashes.join('\n');
+        }
+
+        async function copyToClipboard() {
+            try {
+                await navigator.clipboard.writeText(area.value);
+                showFeedback("Copied!");
+            } catch (err) {
+                console.error("Failed to copy:", err);
+            }
+        }
+
+        function copyExtractorJS() {
+            const code = `(function() {
+                const isTriage = window.location.href.includes("tria.ge");
+                let hashes = [];
+
+                if (isTriage) {
+                    const elements = document.querySelectorAll(".clipboard [data-clipboard]");
+                    hashes = Array.from(elements).map(el => el.dataset.clipboard);
+                } else {
+                    const elements = document.querySelectorAll(".shortify");
+                    hashes = Array.from(elements).map(el => el.innerText.trim());
+                }
+
+                const unique = [...new Set(hashes)].sort();
+                console.log("Extracted Hashes:", unique);
+                copy(unique.join(' ')); 
+                alert(unique.length + " hashes copied to clipboard!");
+            })();`;
+
+            navigator.clipboard.writeText(code);
+            showFeedback("JS Copied!");
+        }
+
+        function showFeedback(msg) {
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = msg;
+            setTimeout(() => btn.innerText = originalText, 1500);
+        }
+    </script>
+</body>
+</html>
