@@ -58,9 +58,6 @@ def main():
 			mb_hashes_metadata = []
 			mb_err = None
 
-	print(vt_err)
-
-
 	# AvClass
 	avc_hashes_metadata = []
 	if args.vtkey and vt_err != 0:
