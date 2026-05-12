@@ -26,7 +26,7 @@ def merge_modules(vt_metadata, avc_metadata, mb_metadata, top_tags):
 			new_item = mb_dict[sha]
 
 			if current_merged_item:
-				current_merged_item['signature'] = new_item['signature']
+				current_merged_item['signature'] = new_item.get("signature", "")
 
 				if current_merged_item.get("threat_tags"):
 					for tag in new_item.get("threat_tags", {}).keys():
@@ -43,12 +43,19 @@ def merge_modules(vt_metadata, avc_metadata, mb_metadata, top_tags):
 						)[:5]
 						current_merged_item['threat_tags'] = dict(top_tags)
 
-				if new_item['file_type'].lower() != "unknown" and new_item['file_type'].lower() not in current_merged_item['file_type'].lower():
-					current_merged_item['file_type'] = f"{current_merged_item['file_type']} - {new_item['file_type']}"
+				if new_item.get("file_type"):
+					if new_item['file_type'].lower() != "unknown" and new_item['file_type'].lower() not in current_merged_item.get("file_type", "").lower():
+						current_merged_item['file_type'] = f"{current_merged_item.get("file_type", "")} - {new_item['file_type']}"
 
-				if change_date((current_merged_item['fs_date'], current_merged_item['fs_time']),(new_item['fs_date'], new_item['fs_time'])):
-					current_merged_item['fs_date'] = new_item['fs_date']
-					current_merged_item['fs_time'] = new_item['fs_time']
+				if current_merged_item.get("fs_date") and current_merged_item.get("fs_time"):
+					if new_item.get("fs_date") and new_item.get("fs_time"):
+						if change_date((current_merged_item['fs_date'], current_merged_item['fs_time']),(new_item['fs_date'], new_item['fs_time'])):
+							current_merged_item['fs_date'] = new_item['fs_date']
+							current_merged_item['fs_time'] = new_item['fs_time']
+				else:
+					if new_item.get("fs_date") and new_item.get("fs_time"):
+						current_merged_item['fs_date'] = new_item['fs_date']
+						current_merged_item['fs_time'] = new_item['fs_time']
 
 				if new_item['error']:
 					if current_merged_item['error']:
