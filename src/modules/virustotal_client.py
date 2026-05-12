@@ -63,7 +63,7 @@ def get_data(hashes, api_key, output_dir):
 				return metadata_list, index
 			else:
 				print(f"[!] Error VT: {response.status_code} - {index+1}/{num_lines} - {sha}")
-				hash_metadata['error'] = f"{response.status_code}"
+				hash_metadata['error'] = f"VT {response.status_code}"
 		metadata_list.append(hash_metadata)   
 	return metadata_list, None
 
