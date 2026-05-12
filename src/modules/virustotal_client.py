@@ -60,10 +60,10 @@ def get_data(hashes, api_key, output_dir):
 		else:
 			if response.status_code == 429:
 				print(f"[!] Error: VirusTotal API request limit reached.\n")
-				return metadata_list
+				return metadata_list, index
 			else:
 				print(f"[!] Error VT: {response.status_code} - {index+1}/{num_lines} - {sha}")
 				hash_metadata['error'] = f"{response.status_code}"
 		metadata_list.append(hash_metadata)   
-	return metadata_list
+	return metadata_list, None
 

@@ -23,7 +23,7 @@ def get_data(path, hashes, output_dir):
 			for i in avclass_results[2].split(","):
 				label = i.split("|")[0]
 				if "FAM" in label:
-					hash_metadata['family'] = label.split(":")[1]
+					hash_metadata['AV_family'] = label.split(":")[1]
 				else:
 					tags.append(label)
 			tags.sort()
@@ -34,4 +34,4 @@ def get_data(path, hashes, output_dir):
 			hash_metadata['error'] = "No AvClass results found."
 		utils.save_json(output_dir, sha, hash_metadata)
 		metadata_list.append(hash_metadata) 
-	return metadata_list
+	return metadata_list, None

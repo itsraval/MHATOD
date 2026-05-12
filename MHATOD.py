@@ -11,10 +11,10 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
 def multi_process(func, name, hashes, skip_lines, key, db_dir, json_dir, csv_dir):
-	hashes_metadata = func(hashes[skip_lines:], key, db_dir)
+	hashes_metadata, err = func(hashes[skip_lines:], key, db_dir)
 	utils.save_json(json_dir, name, {'data':hashes_metadata})
 	utils.save_csv(csv_dir, name, hashes_metadata)
-	return hashes_metadata
+	return hashes_metadata, err
 
 def main():
 	args = get_args()
@@ -48,25 +48,30 @@ def main():
 			print("[!] Skipping MalwareBazaar: No API key provided.")
 
 		if future_vt:
-			vt_hashes_metadata = future_vt.result()
+			vt_hashes_metadata, vt_err = future_vt.result()
 		else:
 			vt_hashes_metadata = []
+			vt_err = None
 		if future_mb:
-			mb_hashes_metadata = future_mb.result()
+			mb_hashes_metadata, mb_err = future_mb.result()
 		else:
 			mb_hashes_metadata = []
+			mb_err = None
+
+	print(vt_err)
+
 
 	# AvClass
 	avc_hashes_metadata = []
-	if args.vtkey:
-		avc_hashes_metadata = avc.get_data(vt_dir, hashes[args.skip_lines:], avc_dir)
+	if args.vtkey and vt_err != 0:
+		avc_hashes_metadata, avc_err = avc.get_data(vt_dir, hashes[args.skip_lines:], avc_dir)
 		utils.save_json(json_dir, "AvClass", {'data':avc_hashes_metadata})
 		utils.save_csv(csv_dir, "AvClass", avc_hashes_metadata)
 	else:
 		print("[!] Skipping AvClass: Depends on VirusTotal output.")
 
 	# Combined
-	if args.vtkey:
+	if args.vtkey and vt_err != 0:
 		combined_metadata = combine.merge_modules(vt_hashes_metadata, avc_hashes_metadata, mb_hashes_metadata, args.top_threat_tags)
 		utils.save_json(json_dir, "Combined_metadata", {'data':combined_metadata})
 		utils.save_csv(csv_dir, "Combined_metadata", combined_metadata)

@@ -70,12 +70,12 @@ def merge_modules(vt_metadata, avc_metadata, mb_metadata, top_tags):
 		new_item = avc_dict[sha]
 
 		if current_merged_item:
-			current_merged_item['AV_family'] = new_item['family']
-			current_merged_item['AV_threat_tags'] = new_item['AV_threat_tags']
+			current_merged_item['AV_family'] = new_item.get("AV_family", "")
+			current_merged_item['AV_threat_tags'] = new_item.get("AV_threat_tags", "")
 
-			if new_item['error']:
+			if new_item.get("error", None):
 				if current_merged_item['error']:
-					current_merged_item['error'] = f"{current_merged_item['error']}\n{mb_dict['error']}"
+					current_merged_item['error'] = f"{current_merged_item['error']}\n{new_item['error']}"
 				else:
 					current_merged_item['error'] = new_item['error']
 		else:
