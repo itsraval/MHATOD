@@ -3,3 +3,6 @@ __pycache__/
 
 # --- Environment Variables (Secrets!) ---
 .env
+
+# --- Temporary folder ---
+tmp/

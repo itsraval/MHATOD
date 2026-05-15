@@ -52,6 +52,19 @@ def save_json(path, filename, data):
 			json.dump(data, json_file)
 	return
 
+def open_json_to_continue(path, filename):
+	file_path = path / f"{filename}.json"
+	if file_path.is_file():
+		with open(file_path, "r") as json_file:
+			data = json.load(json_file)
+		return data, filename
+	else:
+		files = [file.name.split('.')[0] for file in list(path.glob("*.json"))]
+		for file in files:
+			if filename in file:
+				return open_json_to_continue(path, file)
+	return {'data':[]}, filename
+
 def save_csv(path, filename, data):
 	file_path = path / f"{filename}.csv"
 
@@ -64,6 +77,7 @@ def save_csv(path, filename, data):
 		"threat_tags", 
 		"AV_family", 
 		"AV_threat_tags", 
+		"database",
 		"error"
 	]
 
@@ -90,6 +104,7 @@ def save_csv(path, filename, data):
 					processed_row[key] = json.dumps(val)
 				else:
 					processed_row[key] = val
+
 			writer.writerow(processed_row)
 	return
 

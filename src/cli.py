@@ -20,7 +20,18 @@ def get_args():
 
 	parser.add_argument("-o", "-d", "--output", "--destination", type=str, default=f"malware-metadata-{datetime.now().strftime('%Y.%m.%d-%H.%M.%S')}", help="Directory path where the scan results will be saved. (default: malware-metadata-TIMESTAMP)")
 
-	parser.add_argument("-s", "-l", "--skip-lines", type=int, default=0, help="Number of lines to skip at the start of the input file. Useful for resuming a scan. (default: 0)")
+	parser.add_argument("-cps", "--continue-previous-scan", action="store_true", help="Continue previous scan. It needs same input file and outfile file to work. If these requirements are not meet, the scan would be a normal scan. (default: off)")
+
+	parser.add_argument("--input-folder", type=str, default=None, help="Input folder with json response of the hashes. In the format of input-folder and VirusTotal, MalwareBazaar as subfolders.")
+
+	# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	parser.add_argument("--skip-lines", type=int, default=0, help="Number of lines to skip at the start of the input file. (default: 0)")
+
+	parser.add_argument("--analyse-lines", type=int, default=0, help="Number of lines to analyse. (default: all the lines in the file)")
+
+	parser.add_argument("--skip-vt", action="store_true", help="Skip VirusTotal analysis.")
+	parser.add_argument("--skip-mb", action="store_true", help="Skip MalwareBazaar analysis")
 
 	parser.add_argument("-ttt", "--top-threat-tags", action="store_true", help="Shows the only the top 5 threat tags.")
 
@@ -35,6 +46,11 @@ def get_args():
 		missing_keys.append("VIRUSTOTAL_API_KEY")
 	if not args.mbkey:
 		missing_keys.append("MALWAREBAZAAR_API_KEY")
+
+	if args.analyse_lines < 0:
+		parser.error(
+			f"\n\n[!] The number of lines to analyse has to be greater than 0."
+		)
 
 	if len(missing_keys) == 2:
 		parser.error(

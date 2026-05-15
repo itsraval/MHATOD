@@ -10,10 +10,48 @@ import sys
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
-def multi_process(func, name, hashes, skip_lines, key, db_dir, json_dir, csv_dir):
-	hashes_metadata, err = func(hashes[skip_lines:], key, db_dir)
-	utils.save_json(json_dir, name, {'data':hashes_metadata})
-	utils.save_csv(csv_dir, name, hashes_metadata)
+def continue_previous_scan_hashes_selection(vt_dir, avc_dir, mb_dir, hashes):
+	hashes_to_scan = []
+	vt_files = [file.name.split('.')[0] for file in list(vt_dir.glob("*.json"))]
+	avc_files = [file.name.split('.')[0] for file in list(avc_dir.glob("*.json"))]
+	mb_files = [file.name.split('.')[0] for file in list(mb_dir.glob("*.json"))]
+
+	for sha in hashes:
+		if not (sha in vt_files and sha in avc_files and sha in mb_files):
+			hashes_to_scan.append(sha)
+	return hashes_to_scan
+
+def multi_process(func, name, hashes, skip_lines, analyse_lines, key, db_dir, json_dir, csv_dir, continue_previous_scan=False):
+	if analyse_lines != 0:
+		hashes_metadata, err = func(hashes[skip_lines:skip_lines+analyse_lines], key, db_dir)
+	else:
+		hashes_metadata, err = func(hashes[skip_lines:], key, db_dir)
+
+	output_file_name = name
+
+	if continue_previous_scan:
+		previous_hashes_metadata, output_file_name = utils.open_json_to_continue(json_dir, name)
+		previous_hashes_metadata = previous_hashes_metadata['data']
+		for sha_data in hashes_metadata:
+			if sha_data in previous_hashes_metadata:
+				hashes_metadata.remove(sha_data)
+		hashes_metadata = previous_hashes_metadata + hashes_metadata 
+
+		hashes_metadata = sorted(hashes_metadata, key=lambda x: x["sha256"])
+
+		if skip_lines != 0:
+			output_file_name = f"{output_file_name}-skip{skip_lines}"
+		if analyse_lines != 0:
+			output_file_name = f"{output_file_name}-analyse{analyse_lines}"
+		
+	else:	
+		if skip_lines != 0:
+			output_file_name = f"{output_file_name}-skip{skip_lines}"
+		if analyse_lines != 0:
+			output_file_name = f"{output_file_name}-analyse{analyse_lines}"
+
+	utils.save_json(json_dir, output_file_name, {'data':hashes_metadata})
+	utils.save_csv(csv_dir, output_file_name, hashes_metadata)
 	return hashes_metadata, err
 
 def main():
@@ -31,19 +69,29 @@ def main():
 
 	main_dir, vt_dir, avc_dir, mb_dir, json_dir, csv_dir = utils.folder_setup(args.output)
 
+	if args.continue_previous_scan:
+		hashes = continue_previous_scan_hashes_selection(vt_dir, avc_dir, mb_dir, hashes)
+
+	analyse_lines = args.analyse_lines
+	if args.vtkey and not args.skip_vt:
+		analyse_lines_limit = 500 - vt.get_daily_api_requests()
+		if analyse_lines_limit<args.analyse_lines:
+			analyse_lines = analyse_lines_limit
+
 	with ThreadPoolExecutor() as executor:
 		future_vt = None
 		future_mb = None
 
 		# VirusTotal
-		if args.vtkey:
-			future_vt = executor.submit(multi_process, vt.get_data, "VirusTotal", hashes, args.skip_lines, args.vtkey, vt_dir, json_dir, csv_dir)
+		if args.vtkey and not args.skip_vt:
+			future_vt = executor.submit(multi_process, vt.get_data, "VirusTotal", hashes, args.skip_lines, analyse_lines, args.vtkey, vt_dir, json_dir, csv_dir, args.continue_previous_scan)
 		else:
 			print("[!] Skipping VirusTotal: No API key provided.")
 
 		# MalwareBazaar
-		if args.mbkey:
-			future_mb = executor.submit(multi_process, mb.get_data, "MalwareBazaar", hashes, args.skip_lines, args.mbkey, mb_dir, json_dir, csv_dir)
+		if args.mbkey and not args.skip_mb:
+
+			future_mb = executor.submit(multi_process, mb.get_data, "MalwareBazaar", hashes, args.skip_lines, analyse_lines, args.mbkey, mb_dir, json_dir, csv_dir, args.continue_previous_scan)
 		else:
 			print("[!] Skipping MalwareBazaar: No API key provided.")
 
@@ -60,18 +108,48 @@ def main():
 
 	# AvClass
 	avc_hashes_metadata = []
-	if args.vtkey and vt_err != 0:
-		avc_hashes_metadata, avc_err = avc.get_data(vt_dir, hashes[args.skip_lines:], avc_dir)
-		utils.save_json(json_dir, "AvClass", {'data':avc_hashes_metadata})
-		utils.save_csv(csv_dir, "AvClass", avc_hashes_metadata)
+	if args.vtkey and not args.skip_vt and vt_err != 0:
+		if args.analyse_lines != 0:
+			avc_hashes_metadata, avc_err = avc.get_data(vt_dir, hashes[args.skip_lines:args.skip_lines+analyse_lines], avc_dir)
+		else:
+			avc_hashes_metadata, avc_err = avc.get_data(vt_dir, hashes[args.skip_lines:], avc_dir)
+		
+		output_file_name = "AvClass"
+		
+		if args.continue_previous_scan:
+			previous_hashes_metadata, output_file_name = utils.open_json_to_continue(json_dir, output_file_name)
+			previous_hashes_metadata = previous_hashes_metadata['data']
+			for sha_data in avc_hashes_metadata:
+				if sha_data in previous_hashes_metadata:
+					avc_hashes_metadata.remove(sha_data)
+			avc_hashes_metadata = previous_hashes_metadata + avc_hashes_metadata 
+			avc_hashes_metadata = sorted(avc_hashes_metadata, key=lambda x: x["sha256"])
+
+		if args.skip_lines != 0:
+			output_file_name = f"{output_file_name}-skip{args.skip_lines}"
+		if args.analyse_lines != 0:
+			output_file_name = f"{output_file_name}-analyse{analyse_lines}"
+
+		utils.save_json(json_dir, output_file_name, {'data':avc_hashes_metadata})
+		utils.save_csv(csv_dir, output_file_name, avc_hashes_metadata)
 	else:
 		print("[!] Skipping AvClass: Depends on VirusTotal output.")
 
 	# Combined
-	if args.vtkey and vt_err != 0:
+	if args.vtkey and vt_err != 0 and not args.skip_vt:
 		combined_metadata = combine.merge_modules(vt_hashes_metadata, avc_hashes_metadata, mb_hashes_metadata, args.top_threat_tags)
-		utils.save_json(json_dir, "Combined_metadata", {'data':combined_metadata})
-		utils.save_csv(csv_dir, "Combined_metadata", combined_metadata)
+
+		output_file_name = "Combined_metadata"
+		if args.continue_previous_scan:
+			output_file_name = f"{output_file_name}_continued"
+
+		if args.skip_lines != 0:
+			output_file_name = f"{output_file_name}-skip{args.skip_lines}"
+		if args.analyse_lines != 0:
+			output_file_name = f"{output_file_name}-analyse{analyse_lines}"
+
+		utils.save_json(json_dir, output_file_name, {'data':combined_metadata})
+		utils.save_csv(csv_dir, output_file_name, combined_metadata)
 
 	print("\nCompilation completed!")
 	return

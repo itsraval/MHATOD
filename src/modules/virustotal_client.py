@@ -1,6 +1,53 @@
 import requests
 import src.utils as utils
+from pathlib import Path
 from datetime import datetime
+
+api_daily_requests = Path("tmp/cache/VirusTotal-api-requests.tmp")
+
+def get_daily_api_requests():
+	daily_requests = 0
+	if api_daily_requests.is_file():
+		with open(api_daily_requests, "r") as file:
+			content = file.read()
+			if content != "":
+				content = content.strip().split("\t")
+				last_api_request_date = datetime.strptime(content [0], "%d/%m/%Y").date()
+				today_date = datetime.today().date()
+				if last_api_request_date == today_date:
+					daily_requests = int(content[1])
+				else:
+					set_daily_api_requests(0)
+			else:
+				set_daily_api_requests(0)
+	else:
+		api_daily_requests.parent.mkdir(parents=True, exist_ok=True)
+		set_daily_api_requests(0)
+	return daily_requests
+
+def set_daily_api_requests(api_requests_number):
+	today_date_str = datetime.today().strftime("%d/%m/%Y")
+	if api_daily_requests.is_file():
+		with open(api_daily_requests, "r+") as file:
+			content = file.read()
+			file.seek(0)
+			if content != "":
+				content = content.strip().split("\t")
+				last_api_request_date = datetime.strptime(content [0], "%d/%m/%Y").date()
+				today_date = datetime.today().date()
+			
+				if last_api_request_date == today_date:
+					file.write(f"{today_date_str}\t{int(content[1])+api_requests_number}")
+				else:	
+					file.write(f"{today_date_str}\t{api_requests_number}")
+			else:
+				file.write(f"{today_date_str}\t0")
+	else:
+		api_daily_requests.parent.mkdir(parents=True, exist_ok=True)
+		with open(api_daily_requests, "w") as file:
+			file.write(f"{today_date_str}\t0")
+	return
+
 
 def get_data(hashes, api_key, output_dir):
 	api_url = "https://www.virustotal.com/api/v3/files/"
@@ -16,13 +63,14 @@ def get_data(hashes, api_key, output_dir):
 
 		hash_metadata = {
 			"sha256": sha,
+			"database": "VirusTotal",
 			"error": None
 		}
 
+		
 		if response.status_code == 200:
-			print(f"VT {index+1}/{num_lines} - {sha}")
 			utils.save_json(output_dir, sha, result)
-
+			print(f"VT {index+1}/{num_lines} - {sha}")
 			attributes = result.get("data", {}).get("attributes")
 
 			if attributes:
@@ -60,10 +108,15 @@ def get_data(hashes, api_key, output_dir):
 		else:
 			if response.status_code == 429:
 				print(f"[!] Error: VirusTotal API request limit reached.\n")
+				set_daily_api_requests(index)
+				hash_metadata.pop("database")
 				return metadata_list, index
 			else:
 				print(f"[!] Error VT: {response.status_code} - {index+1}/{num_lines} - {sha}")
+				hash_metadata.pop("database")
 				hash_metadata['error'] = f"VT {response.status_code}"
+				utils.save_json(output_dir, sha, result)
 		metadata_list.append(hash_metadata)   
+	set_daily_api_requests(index+1)
 	return metadata_list, None
 

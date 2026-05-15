@@ -57,6 +57,8 @@ def merge_modules(vt_metadata, avc_metadata, mb_metadata, top_tags):
 						current_merged_item['fs_date'] = new_item['fs_date']
 						current_merged_item['fs_time'] = new_item['fs_time']
 
+				current_merged_item['database'] = f"{current_merged_item.get('database', '')}\n{new_item.get('database', '')}".strip()
+
 				if new_item['error']:
 					if current_merged_item['error']:
 						current_merged_item['error'] = f"{current_merged_item['error']}\n{new_item['error']}"
@@ -72,6 +74,8 @@ def merge_modules(vt_metadata, avc_metadata, mb_metadata, top_tags):
 		if current_merged_item:
 			current_merged_item['AV_family'] = new_item.get("AV_family", "")
 			current_merged_item['AV_threat_tags'] = new_item.get("AV_threat_tags", "")
+
+			current_merged_item['database'] = f"{current_merged_item.get('database', '')}\n{new_item.get('database', '')}".strip()
 
 			if new_item.get("error", None):
 				if current_merged_item['error']:
