@@ -1,6 +1,6 @@
 <img align="right" src=".github/assets/MHATOD.png" width="200" height="200">
 
-# MHATOD - Malware Hash Analysis Tool for Open-source Data
+# MHATOD - Malware Hash Analysis Tool via Open-source Data
 
 MHATOD is a Python tool that gathers and classifies malware metadata by querying online databases - [VirusTotal](https://www.virustotal.com/gui/search/) and [MalwareBazaar](https://bazaar.abuse.ch/) - and enriching the results with family and tag classification via [AVClass](https://github.com/malicialab/avclass/tree/master). Results are exported as structured JSON and CSV files for downstream analysis.
 

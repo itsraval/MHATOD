@@ -117,6 +117,6 @@ def get_data(hashes, api_key, output_dir):
 				hash_metadata['error'] = f"VT {response.status_code}"
 				utils.save_json(output_dir, sha, result)
 		metadata_list.append(hash_metadata)   
-	set_daily_api_requests(index+1)
+	set_daily_api_requests(len(hashes))
 	return metadata_list, None
 
