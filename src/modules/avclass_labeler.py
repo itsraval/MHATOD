@@ -36,4 +36,4 @@ def get_data(path, hashes, output_dir):
 			hash_metadata.pop("database")
 		utils.save_json(output_dir, sha, hash_metadata)
 		metadata_list.append(hash_metadata) 
-	return metadata_list, None
+	return metadata_list

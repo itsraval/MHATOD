@@ -27,23 +27,26 @@ def get_daily_api_requests():
 
 def set_daily_api_requests(api_requests_number):
 	today_date_str = datetime.today().strftime("%d/%m/%Y")
+	api_daily_requests.parent.mkdir(parents=True, exist_ok=True)
+
 	if api_daily_requests.is_file():
 		with open(api_daily_requests, "r+") as file:
-			content = file.read()
+			content = file.read().strip()
 			file.seek(0)
-			if content != "":
-				content = content.strip().split("\t")
-				last_api_request_date = datetime.strptime(content [0], "%d/%m/%Y").date()
+			if content:
+				content = content.split("\t")
+				last_api_request_date = datetime.strptime(content[0], "%d/%m/%Y").date()
 				today_date = datetime.today().date()
 			
 				if last_api_request_date == today_date:
-					file.write(f"{today_date_str}\t{int(content[1])+api_requests_number}")
+					new_count = int(content[1])+api_requests_number
 				else:	
-					file.write(f"{today_date_str}\t{api_requests_number}")
+					new_count = api_requests_number
 			else:
-				file.write(f"{today_date_str}\t0")
+				new_count = 0
+			file.write(f"{today_date_str}\t{new_count}")
+			file.truncate()
 	else:
-		api_daily_requests.parent.mkdir(parents=True, exist_ok=True)
 		with open(api_daily_requests, "w") as file:
 			file.write(f"{today_date_str}\t0")
 	return
@@ -110,7 +113,7 @@ def get_data(hashes, api_key, output_dir):
 				print(f"[!] Error: VirusTotal API request limit reached.\n")
 				set_daily_api_requests(index)
 				hash_metadata.pop("database")
-				return metadata_list, index
+				return metadata_list
 			else:
 				print(f"[!] Error VT: {response.status_code} - {index+1}/{num_lines} - {sha}")
 				hash_metadata.pop("database")
@@ -118,5 +121,5 @@ def get_data(hashes, api_key, output_dir):
 				utils.save_json(output_dir, sha, result)
 		metadata_list.append(hash_metadata)   
 	set_daily_api_requests(len(hashes))
-	return metadata_list, None
+	return metadata_list
 

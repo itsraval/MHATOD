@@ -23,9 +23,9 @@ def continue_previous_scan_hashes_selection(vt_dir, avc_dir, mb_dir, hashes):
 
 def multi_process(func, name, hashes, skip_lines, analyse_lines, key, db_dir, json_dir, csv_dir, continue_previous_scan=False):
 	if analyse_lines != 0:
-		hashes_metadata, err = func(hashes[skip_lines:skip_lines+analyse_lines], key, db_dir)
+		hashes_metadata = func(hashes[skip_lines:skip_lines+analyse_lines], key, db_dir)
 	else:
-		hashes_metadata, err = func(hashes[skip_lines:], key, db_dir)
+		hashes_metadata = func(hashes[skip_lines:], key, db_dir)
 
 	output_file_name = name
 
@@ -52,7 +52,7 @@ def multi_process(func, name, hashes, skip_lines, analyse_lines, key, db_dir, js
 
 	utils.save_json(json_dir, output_file_name, {'data':hashes_metadata})
 	utils.save_csv(csv_dir, output_file_name, hashes_metadata)
-	return hashes_metadata, err
+	return hashes_metadata
 
 def main():
 	args = get_args()
@@ -78,6 +78,10 @@ def main():
 		if analyse_lines_limit<args.analyse_lines:
 			analyse_lines = analyse_lines_limit
 
+	if analyse_lines<0:
+		print("[!] VirusTotal API reached today's max requests: 500")
+		return
+
 	with ThreadPoolExecutor() as executor:
 		future_vt = None
 		future_mb = None
@@ -96,23 +100,21 @@ def main():
 			print("[!] Skipping MalwareBazaar: No API key provided.")
 
 		if future_vt:
-			vt_hashes_metadata, vt_err = future_vt.result()
+			vt_hashes_metadata = future_vt.result()
 		else:
 			vt_hashes_metadata = []
-			vt_err = None
 		if future_mb:
-			mb_hashes_metadata, mb_err = future_mb.result()
+			mb_hashes_metadata = future_mb.result()
 		else:
 			mb_hashes_metadata = []
-			mb_err = None
-
+	
 	# AvClass
 	avc_hashes_metadata = []
-	if args.vtkey and not args.skip_vt and vt_err != 0:
+	if args.vtkey and not args.skip_vt and vt_hashes_metadata and analyse_lines>=0:
 		if args.analyse_lines != 0:
-			avc_hashes_metadata, avc_err = avc.get_data(vt_dir, hashes[args.skip_lines:args.skip_lines+analyse_lines], avc_dir)
+			avc_hashes_metadata = avc.get_data(vt_dir, hashes[args.skip_lines:args.skip_lines+analyse_lines], avc_dir)
 		else:
-			avc_hashes_metadata, avc_err = avc.get_data(vt_dir, hashes[args.skip_lines:], avc_dir)
+			avc_hashes_metadata = avc.get_data(vt_dir, hashes[args.skip_lines:], avc_dir)
 		
 		output_file_name = "AvClass"
 		
@@ -136,7 +138,7 @@ def main():
 		print("[!] Skipping AvClass: Depends on VirusTotal output.")
 
 	# Combined
-	if args.vtkey and vt_err != 0 and not args.skip_vt:
+	if args.vtkey and vt_hashes_metadata and not args.skip_vt:
 		combined_metadata = combine.merge_modules(vt_hashes_metadata, avc_hashes_metadata, mb_hashes_metadata, args.top_threat_tags)
 
 		output_file_name = "Combined_metadata"

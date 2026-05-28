@@ -1,4 +1,5 @@
 from datetime import datetime
+from collections import Counter
 
 def list_to_dict(my_list):
 	my_dict = {}
@@ -14,6 +15,31 @@ def change_date(date1, date2):
 	if int(dt_obj1.timestamp()) < int(dt_obj1.timestamp()):
 		return False
 	return True
+
+def analysis(sample):
+	results = list(sample.get("threat_tags", {}).keys())
+	signature = sample.get("signature") or ""
+	AV_family = sample.get("AV_family") or ""
+	results.append(signature.lower())
+	results.append(AV_family.lower())
+
+	for av_tt in sample.get("AV_threat_tags", []):
+		if "UNK:" in av_tt:
+			results.append(av_tt.split("UNK:")[1].lower())
+
+	filtered_results = [x for x in results if x != ""]
+
+	counts = Counter(filtered_results)
+
+	if not counts or counts.most_common(1)[0][1] == 1:
+		MHATOD_analysis = "" 
+	else:
+		max_count = counts.most_common(1)[0][1]
+		max_matches = [item for item, count in counts.items() if count == max_count]
+		MHATOD_analysis = "\n".join(max_matches)
+
+	sample['MHATOD_analysis'] = MHATOD_analysis
+	return sample
 
 def merge_modules(vt_metadata, avc_metadata, mb_metadata, top_tags):
 	merged = list_to_dict(vt_metadata)
@@ -84,5 +110,9 @@ def merge_modules(vt_metadata, avc_metadata, mb_metadata, top_tags):
 					current_merged_item['error'] = new_item['error']
 		else:
 			merged[sha] = new_item.copy()
+
+	for sha in merged.keys():
+		merged[sha] = analysis(merged[sha])
+
 	return list(merged.values())
 

@@ -73,6 +73,7 @@ def save_csv(path, filename, data):
 		"fs_date", 
 		"fs_time",
 		"file_type", 
+		"MHATOD_analysis",
 		"signature", 
 		"threat_tags", 
 		"AV_family", 
