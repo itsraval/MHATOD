@@ -24,8 +24,6 @@ def get_args():
 
 	parser.add_argument("-ff", "--folder-first", action="store_true", help="If the request is already made and saved it will be used instead of making a new request to the API.")
 
-	parser.add_argument("--input-folder", type=str, default=None, help="Input folder with json response of the hashes. In the format of input-folder and VirusTotal, MalwareBazaar as subfolders.")
-
 	parser.add_argument("--skip-lines", type=int, default=0, help="Number of lines to skip at the start of the input file. (default: 0)")
 
 	parser.add_argument("--analyse-lines", type=int, default=0, help="Number of lines to analyse. (default: all the lines in the file)")

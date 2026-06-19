@@ -16,7 +16,9 @@ This project was developed during the dissertation [**"Behavioural Analysis of C
 - **Parallel querying** - VirusTotal and MalwareBazaar requests run concurrently via `ThreadPoolExecutor`
 - **Threat tag aggregation** - token-level tag extraction and frequency ranking across all data sources; optional top-5 filtering
 - **Structured output** - individual JSON files per hash plus consolidated JSON and CSV files for each module and a final combined dataset
-- **Resumable scans** - `--skip-lines` lets you pick up from where a previous run left off
+- **Resumable scans** - `--continue-previous-scan` picks up an interrupted run, merging new results with what was already saved; `--skip-lines` and `--analyse-lines` let you target a specific slice of the input file
+- **Cached lookups** - `--folder-first` reuses previously saved API responses instead of re-querying
+- **VirusTotal quota awareness** - automatically caps the number of hashes analysed per run to stay within VirusTotal's 500 requests/day limit
 
 ---
 
@@ -99,8 +101,13 @@ python MHATOD.py <input_file> [options]
 | Argument | Description |
 |---|---|
 | `input_file` | Path to a text file with one SHA256 hash per line |
-| `-o`, `--output` | Output directory (default: `malware-metadata-TIMESTAMP`) |
-| `-s`, `--skip-lines` | Number of hashes to skip (useful for resuming a scan) |
+| `-o`, `-d`, `--output`, `--destination` | Output directory (default: `malware-metadata-TIMESTAMP`) |
+| `--skip-lines` | Number of hashes to skip at the start of the input file |
+| `--analyse-lines` | Number of hashes to analyse after any skipped lines (default: all remaining lines) |
+| `-cps`, `--continue-previous-scan` | Resume a previous scan. Requires the same input file and output directory; otherwise runs as a normal scan |
+| `-ff`, `--folder-first` | Reuse previously saved API responses instead of querying the API again |
+| `--skip-vt` | Skip VirusTotal analysis |
+| `--skip-mb` | Skip MalwareBazaar analysis |
 | `-ttt`, `--top-threat-tags` | Limit threat tags to the top 5 by frequency |
 | `--vtkey` | VirusTotal API key (overrides `.env`) |
 | `--mbkey` | MalwareBazaar API key (overrides `.env`) |
@@ -116,8 +123,17 @@ python MHATOD.py hashes.txt
 # Custom output directory and top-5 threat tags only
 python MHATOD.py hashes.txt -o results/my_scan --top-threat-tags
 
-# Skip the first 50 hashes (resume a previous run)
-python MHATOD.py hashes.txt -s 50
+# Skip the first 50 hashes
+python MHATOD.py hashes.txt --skip-lines 50
+
+# Only analyse the next 100 hashes after skipping 50
+python MHATOD.py hashes.txt --skip-lines 50 --analyse-lines 100
+
+# Resume an interrupted scan (same input file and output directory)
+python MHATOD.py hashes.txt -o results/my_scan -cps
+
+# Reuse saved API responses instead of re-querying
+python MHATOD.py hashes.txt -ff
 
 # Provide keys inline
 python MHATOD.py hashes.txt --vtkey YOUR_VT_KEY --mbkey YOUR_MB_KEY
@@ -203,6 +219,8 @@ See `scripts/hash_gathering/README.md` for full details.
 ## Limitations
 
 MHATOD's output quality depends on what the databases contain. If a hash has no record on VirusTotal or MalwareBazaar, no metadata will be generated for that sample. Discrepancies between sources are common - this is expected and is one of the reasons the tool queries multiple databases simultaneously.
+
+VirusTotal's free tier is limited to 500 requests per day. MHATOD checks today's usage before scanning and automatically trims `--analyse-lines` to fit within the remaining quota; if the daily limit has already been reached, the run exits without querying VirusTotal.
 
 Classification results (AVClass family, threat tags) should be treated as evidence to guide analysis, not as ground truth. Manual review of the combined output is recommended when building a curated dataset.
 
