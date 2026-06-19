@@ -7,6 +7,7 @@ import src.modules.avclass_labeler as avc
 import src.modules.combine_modules as combine
 
 import sys
+import os
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
@@ -21,11 +22,11 @@ def continue_previous_scan_hashes_selection(vt_dir, avc_dir, mb_dir, hashes):
 			hashes_to_scan.append(sha)
 	return hashes_to_scan
 
-def multi_process(func, name, hashes, skip_lines, analyse_lines, key, db_dir, json_dir, csv_dir, continue_previous_scan=False):
+def multi_process(func, name, hashes, skip_lines, analyse_lines, key, db_dir, json_dir, csv_dir, continue_previous_scan=False, folder_first=False):
 	if analyse_lines != 0:
-		hashes_metadata = func(hashes[skip_lines:skip_lines+analyse_lines], key, db_dir)
+		hashes_metadata = func(hashes[skip_lines:skip_lines+analyse_lines], key, db_dir, folder_first)
 	else:
-		hashes_metadata = func(hashes[skip_lines:], key, db_dir)
+		hashes_metadata = func(hashes[skip_lines:], key, db_dir, folder_first)
 
 	output_file_name = name
 
@@ -82,76 +83,75 @@ def main():
 		print("[!] VirusTotal API reached today's max requests: 500")
 		return
 
-	with ThreadPoolExecutor() as executor:
-		future_vt = None
-		future_mb = None
+	try:
+		with ThreadPoolExecutor() as executor:
+			future_vt = None
+			future_mb = None
 
-		# VirusTotal
-		if args.vtkey and not args.skip_vt:
-			future_vt = executor.submit(multi_process, vt.get_data, "VirusTotal", hashes, args.skip_lines, analyse_lines, args.vtkey, vt_dir, json_dir, csv_dir, args.continue_previous_scan)
-		else:
-			print("[!] Skipping VirusTotal: No API key provided.")
+			# VirusTotal
+			if args.vtkey and not args.skip_vt:
+				future_vt = executor.submit(multi_process, vt.get_data, "VirusTotal", hashes, args.skip_lines, analyse_lines, args.vtkey, vt_dir, json_dir, csv_dir, args.continue_previous_scan, args.folder_first)
+			else:
+				print("[!] Skipping VirusTotal: No API key provided.")
 
-		# MalwareBazaar
-		if args.mbkey and not args.skip_mb:
+			# MalwareBazaar
+			if args.mbkey and not args.skip_mb:
 
-			future_mb = executor.submit(multi_process, mb.get_data, "MalwareBazaar", hashes, args.skip_lines, analyse_lines, args.mbkey, mb_dir, json_dir, csv_dir, args.continue_previous_scan)
-		else:
-			print("[!] Skipping MalwareBazaar: No API key provided.")
+				future_mb = executor.submit(multi_process, mb.get_data, "MalwareBazaar", hashes, args.skip_lines, analyse_lines, args.mbkey, mb_dir, json_dir, csv_dir, args.continue_previous_scan, args.folder_first)
+			else:
+				print("[!] Skipping MalwareBazaar: No API key provided.")
 
-		if future_vt:
-			vt_hashes_metadata = future_vt.result()
-		else:
-			vt_hashes_metadata = []
-		if future_mb:
-			mb_hashes_metadata = future_mb.result()
-		else:
-			mb_hashes_metadata = []
-	
-	# AvClass
-	avc_hashes_metadata = []
-	if args.vtkey and not args.skip_vt and vt_hashes_metadata and analyse_lines>=0:
-		if args.analyse_lines != 0:
-			avc_hashes_metadata = avc.get_data(vt_dir, hashes[args.skip_lines:args.skip_lines+analyse_lines], avc_dir)
-		else:
-			avc_hashes_metadata = avc.get_data(vt_dir, hashes[args.skip_lines:], avc_dir)
+			vt_hashes_metadata = future_vt.result() if future_vt else []
+			mb_hashes_metadata = future_mb.result() if future_mb else []
 		
-		output_file_name = "AvClass"
-		
-		if args.continue_previous_scan:
-			previous_hashes_metadata, output_file_name = utils.open_json_to_continue(json_dir, output_file_name)
-			previous_hashes_metadata = previous_hashes_metadata['data']
-			for sha_data in avc_hashes_metadata:
-				if sha_data in previous_hashes_metadata:
-					avc_hashes_metadata.remove(sha_data)
-			avc_hashes_metadata = previous_hashes_metadata + avc_hashes_metadata 
-			avc_hashes_metadata = sorted(avc_hashes_metadata, key=lambda x: x["sha256"])
+		# AvClass
+		avc_hashes_metadata = []
+		if args.vtkey and not args.skip_vt and vt_hashes_metadata and analyse_lines>=0:
+			if args.analyse_lines != 0:
+				avc_hashes_metadata = avc.get_data(vt_dir, hashes[args.skip_lines:args.skip_lines+analyse_lines], avc_dir)
+			else:
+				avc_hashes_metadata = avc.get_data(vt_dir, hashes[args.skip_lines:], avc_dir)
+			
+			output_file_name = "AvClass"
+			
+			if args.continue_previous_scan:
+				previous_hashes_metadata, output_file_name = utils.open_json_to_continue(json_dir, output_file_name)
+				previous_hashes_metadata = previous_hashes_metadata['data']
+				for sha_data in avc_hashes_metadata:
+					if sha_data in previous_hashes_metadata:
+						avc_hashes_metadata.remove(sha_data)
+				avc_hashes_metadata = previous_hashes_metadata + avc_hashes_metadata 
+				avc_hashes_metadata = sorted(avc_hashes_metadata, key=lambda x: x["sha256"])
 
-		if args.skip_lines != 0:
-			output_file_name = f"{output_file_name}-skip{args.skip_lines}"
-		if args.analyse_lines != 0:
-			output_file_name = f"{output_file_name}-analyse{analyse_lines}"
+			if args.skip_lines != 0:
+				output_file_name = f"{output_file_name}-skip{args.skip_lines}"
+			if args.analyse_lines != 0:
+				output_file_name = f"{output_file_name}-analyse{analyse_lines}"
 
-		utils.save_json(json_dir, output_file_name, {'data':avc_hashes_metadata})
-		utils.save_csv(csv_dir, output_file_name, avc_hashes_metadata)
-	else:
-		print("[!] Skipping AvClass: Depends on VirusTotal output.")
+			utils.save_json(json_dir, output_file_name, {'data':avc_hashes_metadata})
+			utils.save_csv(csv_dir, output_file_name, avc_hashes_metadata)
+		else:
+			print("[!] Skipping AvClass: Depends on VirusTotal output.")
 
-	# Combined
-	if args.vtkey and vt_hashes_metadata and not args.skip_vt:
-		combined_metadata = combine.merge_modules(vt_hashes_metadata, avc_hashes_metadata, mb_hashes_metadata, args.top_threat_tags)
+		# Combined
+		if args.vtkey and vt_hashes_metadata and not args.skip_vt:
+			combined_metadata = combine.merge_modules(vt_hashes_metadata, avc_hashes_metadata, mb_hashes_metadata, args.top_threat_tags)
 
-		output_file_name = "Combined_metadata"
-		if args.continue_previous_scan:
-			output_file_name = f"{output_file_name}_continued"
+			output_file_name = "Combined_metadata"
+			if args.continue_previous_scan:
+				output_file_name = f"{output_file_name}_continued"
 
-		if args.skip_lines != 0:
-			output_file_name = f"{output_file_name}-skip{args.skip_lines}"
-		if args.analyse_lines != 0:
-			output_file_name = f"{output_file_name}-analyse{analyse_lines}"
+			if args.skip_lines != 0:
+				output_file_name = f"{output_file_name}-skip{args.skip_lines}"
+			if args.analyse_lines != 0:
+				output_file_name = f"{output_file_name}-analyse{analyse_lines}"
 
-		utils.save_json(json_dir, output_file_name, {'data':combined_metadata})
-		utils.save_csv(csv_dir, output_file_name, combined_metadata)
+			utils.save_json(json_dir, output_file_name, {'data':combined_metadata})
+			utils.save_csv(csv_dir, output_file_name, combined_metadata)
+
+	except KeyboardInterrupt:
+		print("\n[!] Execution interrupted by user. Exiting cleanly...")
+		os._exit(1)
 
 	print("\nCompilation completed!")
 	return

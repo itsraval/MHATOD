@@ -2,6 +2,7 @@ import requests
 import src.utils as utils
 from pathlib import Path
 from datetime import datetime
+from types import SimpleNamespace
 
 api_daily_requests = Path("tmp/cache/VirusTotal-api-requests.tmp")
 
@@ -52,7 +53,7 @@ def set_daily_api_requests(api_requests_number):
 	return
 
 
-def get_data(hashes, api_key, output_dir):
+def get_data(hashes, api_key, output_dir, folder_first):
 	api_url = "https://www.virustotal.com/api/v3/files/"
 	headers = {"accept":"application/json", "x-apikey":api_key}
 	metadata_list = []
@@ -61,18 +62,30 @@ def get_data(hashes, api_key, output_dir):
 	print("Starting VirusTotal Scan...")
 
 	for index, sha in enumerate(hashes):
-		response = requests.get(api_url + sha, headers=headers)
-		result = response.json()
+		web_scan = True
+		if folder_first:
+			exists, path = utils.file_exists(output_dir, sha, ".json")
+			if exists:
+				result = utils.open_json(path)
+				response = SimpleNamespace()
+				response.status_code = 200	
+				web_scan = False				
+			else:
+				response = requests.get(api_url + sha, headers=headers)
+				result = response.json()
+		else:
+			response = requests.get(api_url + sha, headers=headers)
+			result = response.json()
 
 		hash_metadata = {
 			"sha256": sha,
 			"database": "VirusTotal",
 			"error": None
 		}
-
 		
 		if response.status_code == 200:
-			utils.save_json(output_dir, sha, result)
+			if web_scan:
+				utils.save_json(output_dir, sha, result)
 			print(f"VT {index+1}/{num_lines} - {sha}")
 			attributes = result.get("data", {}).get("attributes")
 

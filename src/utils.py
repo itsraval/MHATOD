@@ -45,12 +45,21 @@ def folder_setup(output_dir):
 	csv_dir.mkdir(parents=True, exist_ok=True)
 	return main_dir, vt_dir, avc_dir, mb_dir, json_dir, csv_dir
 
+def file_exists(path, sha, extension):
+	file_path = Path(path / f"{sha}{extension}")
+	return file_path.is_file(), file_path
+
 def save_json(path, filename, data):
 	file_path = path / f"{filename}.json"
 	if not Path(file_path).is_file():
 		with open(file_path, "w") as json_file:
 			json.dump(data, json_file)
 	return
+
+def open_json(file_path):
+	with open(file_path, "r") as json_file:
+		data = json.load(json_file)
+		return data
 
 def open_json_to_continue(path, filename):
 	file_path = path / f"{filename}.json"
